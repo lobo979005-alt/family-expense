@@ -4,3 +4,4 @@ node_modules/
 sheets_config.json
 family_expense_dashboard.html
 family_expense_history.csv
+scripts/server.pid
