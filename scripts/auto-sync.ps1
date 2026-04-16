@@ -17,12 +17,20 @@ function Write-Log($msg) {
     Write-Host $line
 }
 
+function Get-SavedPid {
+    if (-not (Test-Path $PidFile)) { return $null }
+    $raw = (Get-Content $PidFile -ErrorAction SilentlyContinue | Select-Object -First 1)
+    if (-not $raw) { return $null }
+    $parsed = 0
+    if ([int]::TryParse($raw.Trim(), [ref]$parsed)) { return $parsed }
+    return $null
+}
+
 function Test-ServerRunning {
-    if (-not (Test-Path $PidFile)) { return $false }
-    $existingPid = (Get-Content $PidFile -ErrorAction SilentlyContinue | Select-Object -First 1)
-    if (-not $existingPid) { return $false }
+    $savedPid = Get-SavedPid
+    if (-not $savedPid) { return $false }
     try {
-        Get-Process -Id $existingPid -ErrorAction Stop | Out-Null
+        Get-Process -Id $savedPid -ErrorAction Stop | Out-Null
         return $true
     } catch {
         return $false
@@ -30,14 +38,13 @@ function Test-ServerRunning {
 }
 
 function Stop-Server {
-    if (-not (Test-Path $PidFile)) { return }
-    $existingPid = (Get-Content $PidFile -ErrorAction SilentlyContinue | Select-Object -First 1)
-    if ($existingPid) {
+    $savedPid = Get-SavedPid
+    if ($savedPid) {
         try {
-            Stop-Process -Id $existingPid -Force -ErrorAction Stop
-            Write-Log "Stopped server (PID $existingPid)."
+            Stop-Process -Id $savedPid -Force -ErrorAction Stop
+            Write-Log "Stopped server (PID $savedPid)."
         } catch {
-            Write-Log "No active process at PID $existingPid."
+            Write-Log "No active process at PID $savedPid."
         }
     }
     Remove-Item $PidFile -Force -ErrorAction SilentlyContinue
