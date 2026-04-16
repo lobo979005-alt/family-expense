@@ -34,7 +34,7 @@ function createSheetsClient(refreshToken) {
 
 async function syncToSheets(allEntries) {
   const config = getConfig();
-  if (!config) return;
+  if (!config) { console.log('[Sheets sync] 跳過：未設定 Sheets 憑證'); return; }
 
   const { spreadsheet_id, refresh_token } = config;
   const sheets = createSheetsClient(refresh_token);

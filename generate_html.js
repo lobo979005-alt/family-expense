@@ -74,6 +74,8 @@ const tagList  = Object.entries(tagCount).sort((a,b)=>b[1]-a[1]).map(e=>e[0]);
 const itemList = Object.entries(itemCount).sort((a,b)=>b[1]-a[1]).map(e=>e[0]);
 
 const fmt = n => n.toLocaleString('zh-TW');
+const safeJson = obj => JSON.stringify(obj).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+const escHtml = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
 const html = `<!DOCTYPE html>
 <html lang="zh-TW">
@@ -247,16 +249,16 @@ datalist{background:#111827}
 
 <div id="toast"></div>
 
-<datalist id="tags-dl">${tagList.map(t=>`<option value="${t}">`).join('')}</datalist>
-<datalist id="items-dl">${itemList.map(i=>`<option value="${i.replace(/"/g,'&quot;')}">`).join('')}</datalist>
+<datalist id="tags-dl">${tagList.map(t=>`<option value="${escHtml(t)}">`).join('')}</datalist>
+<datalist id="items-dl">${itemList.map(i=>`<option value="${escHtml(i)}">`).join('')}</datalist>
 
 <script>
-const ENTRIES = ${JSON.stringify(entries)};
-const BY_MONTH = ${JSON.stringify(byMonth)};
-const BY_TAG_LATEST = ${JSON.stringify(byTagThisMonth)};
-const LATEST_MONTH = ${JSON.stringify(latestMonth)};
-const ALL_TAGS = ${JSON.stringify([...allTagSet])};
-const TAG_LIST = ${JSON.stringify(tagList)};
+const ENTRIES = ${safeJson(entries)};
+const BY_MONTH = ${safeJson(byMonth)};
+const BY_TAG_LATEST = ${safeJson(byTagThisMonth)};
+const LATEST_MONTH = ${safeJson(latestMonth)};
+const ALL_TAGS = ${safeJson([...allTagSet])};
+const TAG_LIST = ${safeJson(tagList)};
 
 const tagColors = {
   '信用卡':'#58a6ff','小孩':'#c792ea','孝親':'#ffd166','其他':'#8b93a7'

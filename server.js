@@ -125,8 +125,8 @@ function regenerate() {
     { timeout: 30000 }
   );
 }
-function triggerSync() {
-  const rows = loadEntries();
+function triggerSync(rows) {
+  if (!rows) rows = loadEntries();
   syncToSheets(rows).catch(e => console.error('[Sheets sync]', e.message));
 }
 
@@ -139,7 +139,7 @@ app.post('/api/entry', requireLogin, (req, res) => {
     const rows = loadEntries();
     const row = { id: newId(), month, item, tag, amount: +amount, note, created_at: new Date().toISOString() };
     rows.push(row);
-    saveEntries(rows); regenerate(); triggerSync();
+    saveEntries(rows); regenerate(); triggerSync(rows);
     res.json({ ok: true, row });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -156,7 +156,7 @@ app.post('/api/entries', requireLogin, (req, res) => {
       amount: +e.amount, note: e.note || '', created_at: now
     }));
     rows.push(...added);
-    saveEntries(rows); regenerate(); triggerSync();
+    saveEntries(rows); regenerate(); triggerSync(rows);
     res.json({ ok: true, count: added.length });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -177,7 +177,7 @@ app.put('/api/entry/:id', requireLogin, (req, res) => {
       amount: amount !== undefined ? +amount : cur.amount,
       note:   note   ?? cur.note,
     };
-    saveEntries(rows); regenerate(); triggerSync();
+    saveEntries(rows); regenerate(); triggerSync(rows);
     res.json({ ok: true, row: rows[idx] });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -189,7 +189,7 @@ app.delete('/api/entry/:id', requireLogin, (req, res) => {
     const before = rows.length;
     rows = rows.filter(r => r.id !== req.params.id);
     if (rows.length === before) return res.status(404).json({ error: '找不到資料' });
-    saveEntries(rows); regenerate(); triggerSync();
+    saveEntries(rows); regenerate(); triggerSync(rows);
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
